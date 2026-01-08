@@ -8,6 +8,7 @@ Zapier integration for **Productboard API v2.0.0** (Beta). Manage entities and h
 |------|--------|-------------|
 | 🔄 Trigger | **List Entities** | Poll for entities (features, initiatives, objectives, etc.) |
 | 🔍 Search | **Get Entity** | Retrieve a specific entity by ID with full health details |
+| 🔍 Search | **Get Entity Relationships** | Retrieve parent, child, and linked entities for an entity |
 | ✏️ Action | **Create/Update Health** | Update health status (onTrack, atRisk, offTrack) for any entity |
 
 ## Health Status Values
@@ -111,9 +112,11 @@ Productboard API v2 allows **50 requests per second** per token.
 ├── authentication.js     # API token auth
 ├── package.json
 ├── triggers/
-│   └── listEntities.js   # List entities trigger
+│   └── healthUpdates.js  # Health updates trigger
 ├── searches/
-│   └── getEntity.js      # Get entity search
+│   ├── listEntities.js   # List entities search
+│   ├── getEntity.js      # Get entity search
+│   └── getEntityRelationships.js  # Get entity relationships
 └── creates/
     └── createHealthUpdate.js  # Health update action
 ```
