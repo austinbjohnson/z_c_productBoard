@@ -1,0 +1,21 @@
+{
+  "name": "zapier-productboard",
+  "version": "1.0.0",
+  "description": "Zapier integration for Productboard API v2.0.0 - manage entities and health updates",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --testTimeout 10000"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "zapier-platform-core": "15.5.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "private": true
+}
+
