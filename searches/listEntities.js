@@ -1,10 +1,10 @@
 /**
  * Search Entities
  *
- * Searches entities from Productboard API v2.0.0 using the POST search endpoint.
- * Supports comprehensive filtering by type, owner, status, health, dates, and more.
+ * Lists and filters entities from Productboard API v2.0.0 using the GET endpoint.
+ * Supports filtering by type, owner, status, health, and relationships.
  *
- * @see https://developer.productboard.com/v2.0.0/reference/searchentities
+ * @see https://developer.productboard.com/v2.0.0/reference/list-entities
  */
 
 const { formatEntity, entityOutputFields } = require('../lib/utils');
@@ -34,119 +34,57 @@ const ARCHIVED_OPTIONS = {
   all: 'All (active and archived)',
 };
 
-/**
- * Build filter object from input data
- * Only includes filters that have values
- */
-const buildFilter = (inputData) => {
-  const filter = {};
-
-  // Owner filter - supports multiple owner IDs
-  if (inputData.ownerIds && inputData.ownerIds.length > 0) {
-    const ids = Array.isArray(inputData.ownerIds)
-      ? inputData.ownerIds
-      : inputData.ownerIds.split(',').map((id) => id.trim());
-    if (ids.length > 0) {
-      filter['owner.id'] = ids;
-    }
-  }
-
-  // Status name filter - supports multiple statuses
-  if (inputData.statusNames && inputData.statusNames.length > 0) {
-    const names = Array.isArray(inputData.statusNames)
-      ? inputData.statusNames
-      : inputData.statusNames.split(',').map((s) => s.trim());
-    if (names.length > 0) {
-      filter['status.name'] = names;
-    }
-  }
-
-  // Health status filter
-  if (inputData.healthStatus) {
-    filter['health.status'] = [inputData.healthStatus];
-  }
-
-  // Archived filter
-  if (inputData.archived && inputData.archived !== 'all') {
-    filter['archived'] = [inputData.archived === 'true'];
-  }
-
-  // Parent entity filter - for hierarchy traversal
-  if (inputData.parentId) {
-    filter['parent.id'] = [inputData.parentId];
-  }
-
-  // Component filter - filter features by component
-  if (inputData.componentId) {
-    filter['component.id'] = [inputData.componentId];
-  }
-
-  // Product filter
-  if (inputData.productId) {
-    filter['product.id'] = [inputData.productId];
-  }
-
-  // Initiative filter - filter features linked to initiative
-  if (inputData.initiativeId) {
-    filter['initiative.id'] = [inputData.initiativeId];
-  }
-
-  // Objective filter
-  if (inputData.objectiveId) {
-    filter['objective.id'] = [inputData.objectiveId];
-  }
-
-  // Release filter
-  if (inputData.releaseId) {
-    filter['release.id'] = [inputData.releaseId];
-  }
-
-  // Timeframe filters
-  if (inputData.startDateFrom) {
-    filter['timeframe.startDate.gte'] = [inputData.startDateFrom];
-  }
-  if (inputData.startDateTo) {
-    filter['timeframe.startDate.lte'] = [inputData.startDateTo];
-  }
-  if (inputData.endDateFrom) {
-    filter['timeframe.endDate.gte'] = [inputData.endDateFrom];
-  }
-  if (inputData.endDateTo) {
-    filter['timeframe.endDate.lte'] = [inputData.endDateTo];
-  }
-
-  return filter;
-};
-
 const perform = async (z, bundle) => {
   const { entityType } = bundle.inputData;
 
-  // If no entity type specified, fall back to GET endpoint for listing all
-  if (!entityType) {
-    const response = await z.request({
-      url: 'https://api.productboard.com/v2/entities',
-      method: 'GET',
-    });
-    const entities = response.data.data || [];
-    return entities.map(formatEntity);
+  // Build query parameters for GET request
+  const params = {};
+  
+  if (entityType) {
+    params.type = entityType;
   }
 
-  // Use POST search endpoint for filtered searches
-  const filter = buildFilter(bundle.inputData);
+  // Add filter parameters from input data
+  const { ownerIds, statusNames, healthStatus, archived, parentId, 
+          componentId, productId, initiativeId, objectiveId, releaseId } = bundle.inputData;
 
-  const requestBody = {
-    type: entityType,
-  };
-
-  // Only include filter if we have filter conditions
-  if (Object.keys(filter).length > 0) {
-    requestBody.filter = filter;
+  if (ownerIds) {
+    const ids = Array.isArray(ownerIds) ? ownerIds : ownerIds.split(',').map(id => id.trim());
+    params['owner.id'] = ids.join(',');
+  }
+  if (statusNames) {
+    const names = Array.isArray(statusNames) ? statusNames : statusNames.split(',').map(s => s.trim());
+    params['status.name'] = names.join(',');
+  }
+  if (healthStatus) {
+    params['health.status'] = healthStatus;
+  }
+  if (archived && archived !== 'all') {
+    params.archived = archived === 'true';
+  }
+  if (parentId) {
+    params['parent.id'] = parentId;
+  }
+  if (componentId) {
+    params['component.id'] = componentId;
+  }
+  if (productId) {
+    params['product.id'] = productId;
+  }
+  if (initiativeId) {
+    params['initiative.id'] = initiativeId;
+  }
+  if (objectiveId) {
+    params['objective.id'] = objectiveId;
+  }
+  if (releaseId) {
+    params['release.id'] = releaseId;
   }
 
   const response = await z.request({
-    url: 'https://api.productboard.com/v2/entities/search',
-    method: 'POST',
-    body: requestBody,
+    url: 'https://api.productboard.com/v2/entities',
+    method: 'GET',
+    params,
   });
 
   const entities = response.data.data || [];
