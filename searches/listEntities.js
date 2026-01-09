@@ -1,10 +1,10 @@
 /**
  * Search Entities
  *
- * Lists and filters entities from Productboard API v2.0.0 using the GET endpoint.
- * Supports filtering by type, owner, status, health, and relationships.
+ * Searches entities from Productboard API v2.0.0 using the POST search endpoint.
+ * Supports comprehensive filtering by type, owner, status, health, dates, and more.
  *
- * @see https://developer.productboard.com/v2.0.0/reference/list-entities
+ * @see https://developer.productboard.com/v2.0.0/reference/searchentities
  */
 
 const { formatEntity, entityOutputFields } = require('../lib/utils');
@@ -35,60 +35,87 @@ const ARCHIVED_OPTIONS = {
 };
 
 const perform = async (z, bundle) => {
-  const { entityType } = bundle.inputData;
+  const { entityType, ownerEmails, statusNames, healthStatus, archived, 
+          parentId, componentId, productId, initiativeId, objectiveId, releaseId,
+          startDate, endDate } = bundle.inputData;
 
-  // Build query parameters for GET request
-  const params = {};
-  
+  // Build the search request body per Productboard API v2 spec
+  // Structure: { data: { owners: [{email}], statuses: [{name}], ... } }
+  const searchData = {
+    fields: 'default',
+  };
+
+  // Entity type filter - use 'type' (singular) as the field name
   if (entityType) {
-    params.type = entityType;
+    searchData.type = entityType;
   }
 
-  // Add filter parameters from input data
-  const { ownerIds, statusNames, healthStatus, archived, parentId, 
-          componentId, productId, initiativeId, objectiveId, releaseId } = bundle.inputData;
-
-  if (ownerIds) {
-    const ids = Array.isArray(ownerIds) ? ownerIds : ownerIds.split(',').map(id => id.trim());
-    params['owner.id'] = ids.join(',');
+  // Owner filter - array of objects with email
+  if (ownerEmails) {
+    const emails = Array.isArray(ownerEmails) ? ownerEmails : ownerEmails.split(',').map(e => e.trim());
+    searchData.owners = emails.map(email => ({ email }));
   }
+
+  // Status filter - array of objects with name
   if (statusNames) {
     const names = Array.isArray(statusNames) ? statusNames : statusNames.split(',').map(s => s.trim());
-    params['status.name'] = names.join(',');
+    searchData.statuses = names.map(name => ({ name }));
   }
+
+  // Health status filter
   if (healthStatus) {
-    params['health.status'] = healthStatus;
+    searchData.health = { status: healthStatus };
   }
+
+  // Archived filter
   if (archived && archived !== 'all') {
-    params.archived = archived === 'true';
+    searchData.archived = archived === 'true';
   }
+
+  // Parent filter
   if (parentId) {
-    params['parent.id'] = parentId;
+    searchData.parent = { id: parentId };
   }
+
+  // Component filter
   if (componentId) {
-    params['component.id'] = componentId;
+    searchData.component = { id: componentId };
   }
+
+  // Product filter
   if (productId) {
-    params['product.id'] = productId;
+    searchData.product = { id: productId };
   }
+
+  // Initiative filter
   if (initiativeId) {
-    params['initiative.id'] = initiativeId;
+    searchData.initiative = { id: initiativeId };
   }
+
+  // Objective filter
   if (objectiveId) {
-    params['objective.id'] = objectiveId;
+    searchData.objective = { id: objectiveId };
   }
+
+  // Release filter
   if (releaseId) {
-    params['release.id'] = releaseId;
+    searchData.release = { id: releaseId };
+  }
+
+  // Timeframe filter
+  if (startDate || endDate) {
+    searchData.timeframe = {};
+    if (startDate) searchData.timeframe.startDate = startDate;
+    if (endDate) searchData.timeframe.endDate = endDate;
   }
 
   const response = await z.request({
-    url: 'https://api.productboard.com/v2/entities',
-    method: 'GET',
-    params,
+    url: 'https://api.productboard.com/v2/entities/search',
+    method: 'POST',
+    body: { data: searchData },
   });
 
   const entities = response.data.data || [];
-
   return entities.map(formatEntity);
 };
 
@@ -146,17 +173,17 @@ module.exports = {
         choices: ENTITY_TYPES,
         required: false,
         helpText:
-          'Filter by entity type. Required for advanced filtering. Leave empty to list all entities without filters.',
+          'Filter by entity type. Required for advanced filtering. Leave empty to list all entities.',
       },
 
       // Ownership & Status
       {
-        key: 'ownerIds',
-        label: 'Owner IDs',
+        key: 'ownerEmails',
+        label: 'Owner Emails',
         type: 'string',
         required: false,
         helpText:
-          'Filter by owner(s). Enter comma-separated member IDs (e.g., "member_123,member_456").',
+          'Filter by owner email(s). Enter comma-separated emails (e.g., "austin.johnson@zapier.com").',
       },
       {
         key: 'statusNames',
@@ -230,32 +257,18 @@ module.exports = {
 
       // Date filters
       {
-        key: 'startDateFrom',
-        label: 'Start Date (From)',
+        key: 'startDate',
+        label: 'Start Date',
         type: 'datetime',
         required: false,
-        helpText: 'Filter entities with start date on or after this date.',
+        helpText: 'Filter entities by timeframe start date (YYYY-MM-DD).',
       },
       {
-        key: 'startDateTo',
-        label: 'Start Date (To)',
+        key: 'endDate',
+        label: 'End Date',
         type: 'datetime',
         required: false,
-        helpText: 'Filter entities with start date on or before this date.',
-      },
-      {
-        key: 'endDateFrom',
-        label: 'End Date (From)',
-        type: 'datetime',
-        required: false,
-        helpText: 'Filter entities with end date on or after this date.',
-      },
-      {
-        key: 'endDateTo',
-        label: 'End Date (To)',
-        type: 'datetime',
-        required: false,
-        helpText: 'Filter entities with end date on or before this date.',
+        helpText: 'Filter entities by timeframe end date (YYYY-MM-DD).',
       },
     ],
     sample,
