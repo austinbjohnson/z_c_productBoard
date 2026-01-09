@@ -28,29 +28,29 @@ describe('Authentication', () => {
   });
 });
 
-describe('List Entities Trigger', () => {
-  const trigger = App.triggers.listEntities;
+describe('List Entities Search', () => {
+  const search = App.searches.listEntities;
 
   it('should have correct key and noun', () => {
-    expect(trigger.key).toBe('listEntities');
-    expect(trigger.noun).toBe('Entity');
+    expect(search.key).toBe('listEntities');
+    expect(search.noun).toBe('Entity');
   });
 
   it('should have entity type choices', () => {
-    const entityTypeField = trigger.operation.inputFields.find(f => f.key === 'entityType');
+    const entityTypeField = search.operation.inputFields.find(f => f.key === 'entityType');
     expect(entityTypeField.choices).toBeDefined();
-    expect(entityTypeField.choices.length).toBeGreaterThan(0);
     
-    const types = entityTypeField.choices.map(c => c.value);
+    // Choices is an object { key: 'Label' } - check the keys contain expected types
+    const types = Object.keys(entityTypeField.choices);
     expect(types).toContain('feature');
     expect(types).toContain('initiative');
     expect(types).toContain('objective');
   });
 
   it('should have sample data', () => {
-    expect(trigger.operation.sample).toBeDefined();
-    expect(trigger.operation.sample.id).toBeDefined();
-    expect(trigger.operation.sample.type).toBe('feature');
+    expect(search.operation.sample).toBeDefined();
+    expect(search.operation.sample.id).toBeDefined();
+    expect(search.operation.sample.type).toBe('feature');
   });
 });
 
@@ -69,9 +69,10 @@ describe('Get Entity Search', () => {
 
   it('should have health fields in output', () => {
     const outputKeys = search.operation.outputFields.map(f => f.key);
-    expect(outputKeys).toContain('healthStatus');
-    expect(outputKeys).toContain('healthMode');
-    expect(outputKeys).toContain('healthComment');
+    // Health fields use double underscore notation: health__status
+    expect(outputKeys).toContain('health__status');
+    expect(outputKeys).toContain('health__mode');
+    expect(outputKeys).toContain('health__comment');
   });
 });
 
@@ -94,7 +95,8 @@ describe('Create Health Update Action', () => {
 
   it('should have correct health status choices', () => {
     const statusField = create.operation.inputFields.find(f => f.key === 'status');
-    const statuses = statusField.choices.map(c => c.value);
+    // Choices is an object { key: 'Label' } - check the keys contain expected statuses
+    const statuses = Object.keys(statusField.choices);
     
     expect(statuses).toContain('notSet');
     expect(statuses).toContain('onTrack');
@@ -104,7 +106,8 @@ describe('Create Health Update Action', () => {
 
   it('should have correct health mode choices', () => {
     const modeField = create.operation.inputFields.find(f => f.key === 'mode');
-    const modes = modeField.choices.map(c => c.value);
+    // Choices is an object { key: 'Label' } - check the keys contain expected modes
+    const modes = Object.keys(modeField.choices);
     
     expect(modes).toContain('manual');
     expect(modes).toContain('calculated');

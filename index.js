@@ -74,10 +74,30 @@ const handleErrors = (response, z, bundle) => {
       );
     }
     
-    // Generic error with API message
-    const message = errorBody.message || errorBody.error || 'Unknown API error';
+    // Extract error message from various possible formats
+    let message = 'Unknown API error';
+    if (errorBody.message) {
+      message = errorBody.message;
+    } else if (errorBody.error) {
+      // Handle both string and nested object formats
+      message = typeof errorBody.error === 'string' 
+        ? errorBody.error 
+        : errorBody.error.message || JSON.stringify(errorBody.error);
+    } else if (errorBody.errors && Array.isArray(errorBody.errors)) {
+      // Handle array of errors format
+      message = errorBody.errors.map(e => e.message || e.detail || JSON.stringify(e)).join('; ');
+    } else if (errorBody.detail) {
+      // Handle RFC 7807 Problem Details format
+      message = errorBody.detail;
+    } else if (errorBody.title) {
+      message = errorBody.title;
+    } else if (Object.keys(errorBody).length > 0) {
+      // Last resort: stringify the entire error body for debugging
+      message = JSON.stringify(errorBody);
+    }
+    
     throw new z.errors.Error(
-      `Productboard API error: ${message}`,
+      `Productboard API error (${response.status}): ${message}`,
       'ApiError',
       response.status
     );
