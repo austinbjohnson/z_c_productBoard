@@ -1,14 +1,15 @@
 /**
  * Productboard Zapier Integration
- * 
+ *
  * Integrates with Productboard API v2.0.0 (Beta)
- * 
+ *
  * Features:
  * - List entities (features, initiatives, objectives, etc.)
  * - Get a specific entity with health update details
  * - Get entity relationships (parent, child, linked entities)
  * - Create/update health status for entities
- * 
+ * - Create note relationships (link insights to features)
+ *
  * @see https://developer.productboard.com/v2.0.0/reference/introduction
  */
 
@@ -20,6 +21,7 @@ const listEntities = require('./searches/listEntities');
 const getEntity = require('./searches/getEntity');
 const getEntityRelationships = require('./searches/getEntityRelationships');
 const createHealthUpdate = require('./creates/createHealthUpdate');
+const createNoteRelationship = require('./creates/createNoteRelationship');
 
 /**
  * Middleware: Add authentication header to all requests
@@ -133,6 +135,7 @@ module.exports = {
   // Creates - for creating/updating records
   creates: {
     [createHealthUpdate.key]: createHealthUpdate,
+    [createNoteRelationship.key]: createNoteRelationship,
   },
 
   // Resources can be used for dynamic dropdowns (future enhancement)
