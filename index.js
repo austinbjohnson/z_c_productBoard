@@ -30,7 +30,8 @@ const addAuthHeader = (request, z, bundle) => {
   if (bundle.authData.apiToken) {
     request.headers = request.headers || {};
     request.headers['Authorization'] = `Bearer ${bundle.authData.apiToken}`;
-    request.headers['Content-Type'] = 'application/json';
+    // Note: Don't set Content-Type here - Zapier sets it automatically for JSON bodies
+    // Setting it manually causes duplicate headers: "application/json, application/json"
     request.headers['Accept'] = 'application/json';
   }
   return request;
