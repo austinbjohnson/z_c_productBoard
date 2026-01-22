@@ -4,22 +4,23 @@ Zapier integration for **Productboard API v2.0.0** (Beta). Manage entities and h
 
 ## Features
 
-| Type | Action | Description |
-|------|--------|-------------|
-| 🔄 Trigger | **List Entities** | Poll for entities (features, initiatives, objectives, etc.) |
-| 🔍 Search | **Get Entity** | Retrieve a specific entity by ID with full health details |
-| 🔍 Search | **Get Entity Relationships** | Retrieve parent, child, and linked entities for an entity |
-| ✏️ Action | **Create/Update Health** | Update health status (onTrack, atRisk, offTrack) for any entity |
+| Type       | Action                       | Description                                                     |
+| ---------- | ---------------------------- | --------------------------------------------------------------- |
+| 🔄 Trigger | **List Entities**            | Poll for entities (features, initiatives, objectives, etc.)     |
+| 🔍 Search  | **Get Entity**               | Retrieve a specific entity by ID with full health details       |
+| 🔍 Search  | **Get Entity Relationships** | Retrieve parent, child, and linked entities for an entity       |
+| ✏️ Action  | **Create/Update Health**     | Update health status (onTrack, atRisk, offTrack) for any entity |
+| ✏️ Action  | **Create Note Relationship** | Link a note (insight) to a feature, product, or component       |
 
 ## Health Status Values
 
 Per Productboard API v2 docs:
 
-| Status | Description |
-|--------|-------------|
-| `notSet` | No health status set |
-| `onTrack` | ✅ Everything on schedule |
-| `atRisk` | ⚠️ Potential issues |
+| Status     | Description                |
+| ---------- | -------------------------- |
+| `notSet`   | No health status set       |
+| `onTrack`  | ✅ Everything on schedule   |
+| `atRisk`   | ⚠️ Potential issues        |
 | `offTrack` | 🔴 Behind schedule/blocked |
 
 ## Quick Start
@@ -62,15 +63,23 @@ Uses **API Token** authentication. Users generate tokens from:
 
 ## Entity Types Supported
 
-- `product` - Products
-- `component` - Components  
-- `feature` - Features
-- `subfeature` - Subfeatures
-- `initiative` - Initiatives
-- `objective` - Objectives
-- `keyResult` - Key Results
-- `release` - Releases
-- `releaseGroup` - Release Groups
+* `product` - Products
+
+* `component` - Components
+
+* `feature` - Features
+
+* `subfeature` - Subfeatures
+
+* `initiative` - Initiatives
+
+* `objective` - Objectives
+
+* `keyResult` - Key Results
+
+* `release` - Releases
+
+* `releaseGroup` - Release Groups
 
 ## Example Zap Ideas
 
@@ -81,9 +90,13 @@ Uses **API Token** authentication. Users generate tokens from:
 
 ## API Reference
 
-- [Productboard API v2 Docs](https://developer.productboard.com/v2.0.0/reference/introduction)
-- [Entity Fields](https://developer.productboard.com/v2.0.0/reference/field-value-types)
-- [Health Fields](#health-fields)
+* [Productboard API v2 Docs](https://developer.productboard.com/v2.0.0/reference/introduction)
+
+* [Entity Fields](https://developer.productboard.com/v2.0.0/reference/field-value-types)
+
+* [Health Fields](#health-fields)
+
+* [Create Note Relationship](https://developer.productboard.com/v2.0.0/reference/setnoterelationship)
 
 ### Health Fields (from docs)
 
@@ -118,7 +131,8 @@ Productboard API v2 allows **50 requests per second** per token.
 │   ├── getEntity.js      # Get entity search
 │   └── getEntityRelationships.js  # Get entity relationships
 └── creates/
-    └── createHealthUpdate.js  # Health update action
+    ├── createHealthUpdate.js       # Health update action
+    └── createNoteRelationship.js   # Link notes to features
 ```
 
 ## CLI Commands Reference
@@ -143,4 +157,3 @@ zapier logs --type http --detailed --limit=10
 ## Notes
 
 ⚠️ Productboard API v2 is in **Beta** - endpoints may change. See [Known Issues](https://developer.productboard.com/v2.0.0/reference/known-issues).
-
